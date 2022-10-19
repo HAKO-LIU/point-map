@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+<table border="1" width="100px" height="100px" cellpadding="1p">
+            <thead>
+            </thead>
+            <tbody>
+              <meta charset="UTF-8">
+              {% for data in dataset %}
+                <tr>
+                    {% for value in data %}
+
+                            <td>{{ value}}</td>
+
+                    {% endfor %}
+                </tr>
+              {% endfor %}
+            </tbody>
+            </table>
+</body>
+</html>
