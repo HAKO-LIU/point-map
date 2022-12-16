@@ -5,12 +5,17 @@
     @author: lc
 '''
 from flask import Flask,render_template
+from flask_sqlalchemy import SQLAlchemy
+
+
 from flask_cors import CORS
 # from interfaces import api
 import os
 import tablib
 import pandas as pd
 import numpy as np
+import database_config
+
 
 from bl_list import bl_view
 from cv_list import cv_view
@@ -33,6 +38,12 @@ from te_list import te_view
 app = Flask(__name__)
 # CORS(app,supports_credentials=True)
 # api.init_app(app)
+
+app.config.from_object(database_config)
+
+db=SQLAlchemy(app)  #数据库连接
+db.create_all()
+
 
 app.register_blueprint(bl_view.bl_v)
 app.register_blueprint(cv_view.cv_v)
