@@ -41,8 +41,8 @@ app = Flask(__name__)
 
 app.config.from_object(database_config)
 
-db=SQLAlchemy(app)  #数据库连接
-db.create_all()
+# db=SQLAlchemy(app)  #数据库连接
+# db.create_all()
 
 
 app.register_blueprint(bl_view.bl_v)
