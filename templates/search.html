@@ -1,0 +1,12 @@
+<!--搜索表单-->
+<title>测试样例</title>
+<form method="post">
+    <h3>请输入单个字符</h3>
+    <label>字符：</label><input type="text" name="char" placeholder="请输入字符"><br/>
+
+    <input type="submit" value="显示">
+</form>
+
+{% for message in get_flashed_messages() %}
+    {{ message }}
+{% endfor %}
