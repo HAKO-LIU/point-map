@@ -2,6 +2,9 @@
 <html lang="en">
 <head>
     <style>
+        body{
+            margin: 0 auto;
+        }
         .button.red {
             background-color: #ca3535;
             border-color: #c43c35;
@@ -96,14 +99,23 @@
             background-image: linear-gradient(top, rgba(255, 255, 255, .3), rgba(255, 255, 255, 0));
         }
 
+        .main{
+            margin: auto;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
         }
+}
+
     </style>
     <meta charset="UTF-8">
-    <title>Title</title>
+    <title>CSV</title>
 </head>
 <body>
 
-<input type="button" class="button red" value="返回" onclick="location.href='/'">
+<div class="main">
+<input type="button" class="button red" value="戻る" onclick="location.href='/'">
 <br>
 <br>
 <table border="1" width="100px" height="100px" cellpadding="1p">
@@ -122,5 +134,6 @@
     {% endfor %}
     </tbody>
 </table>
+<div>
 </body>
 </html>

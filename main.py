@@ -5,7 +5,7 @@
     @author: lc
 '''
 from flask import Flask, render_template
-from flask_sqlalchemy import SQLAlchemy
+# from flask_sqlalchemy import SQLAlchemy
 
 # 查询
 from flask_wtf import FlaskForm
@@ -51,14 +51,14 @@ def get_chuankou_exe() -> subprocess.Popen:
     p = subprocess.Popen(exe_path, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
                          universal_newlines=True, shell=True, encoding='gbk')
     chuankou_p = p
-    print("启动串口exe")
+    # print("启动串口exe")
     return p
 
 
 def close_chuankou_exe():
     global chuankou_p
     if chuankou_p:
-        print("关闭串口exe")
+        # print("关闭串口exe")
         chuankou_p.stdin.write("e\n")
         chuankou_p.stdin.flush()
         try:
@@ -67,7 +67,7 @@ def close_chuankou_exe():
                 try:
                     # 读出串口程序打印的数据, 一定要读取出来 可以不print
                     line = chuankou_p.stdout.readline()
-                    print("exe out: ", line)
+                    # print("exe out: ", line)
                 except UnicodeError:
                     print('UnicodeError')
                     line = ""
@@ -75,7 +75,7 @@ def close_chuankou_exe():
                     break
                 if line == "":
                     timer += 1
-                    sleep(0.1)
+                    # sleep(0.1)
         except Exception as e:
             # 这段运行十有八九会出异常 怀疑因为在读取输出的时候chuankou.exe已经完成退出导致取不到数据, 但是程序运行不受影响
             print(e)
@@ -113,6 +113,44 @@ app.register_blueprint(te_view.te_v)
 # 可以自行调整
 app.config["SECRET_KEY"] = 'happynewyear'
 
+def display_serial(char):
+    char_ = char
+    res = read_csv('pin/' + char_ + '.csv')
+    # 调用c
+    print("res: ", res)
+    # 此处会先关闭串口程序再次打开 是为了避免同一串口进程缺少init和屏幕清零过程导致不更新数据
+    p = get_chuankou_exe()
+    close_chuankou_exe()
+    p = get_chuankou_exe()
+    # 连续写入两次需要发送的数据 怀疑python底层有bug
+    p.stdin.write(res + '\n')
+    p.stdin.flush()
+    p.stdin.write(res + '\n')
+    p.stdin.flush()
+    # sleep(2)
+    # 读出串口程序打印的数据, 一定要读取出来 可以不print
+    try:
+        line = p.stdout.readline()
+        # print(line)
+    except UnicodeError as e:
+        # print(e)
+        # sleep(0.1)
+        line = ""
+    timer = 0
+    # 999作为输出完成的标志 如果需要调整需要同步调整串口c文件
+    while '999' not in line and timer < 10:
+        # print(1)
+        # p.stdin.write('\n')
+        try:
+            line = p.stdout.readline()
+            print(line)
+        except UnicodeError as e:
+            print(e)
+            timer += 1
+            # sleep(0.1)
+            line = ""
+        print(2)
+    print(line)
 
 # @app.route('/', methods=['GET', 'POST'])
 # def admin():
@@ -123,7 +161,7 @@ app.config["SECRET_KEY"] = 'happynewyear'
 def admin():
     if request.method == "POST":
         char_ = request.form.get("char")
-
+        print(char_)
         if not all([char_]):
             # 向前端界面弹出一条提示(闪现消息)
             flash("文字を入力してください")
@@ -131,48 +169,50 @@ def admin():
             flash("入力できる文字数は1文字のみ")
 
         else:
-            res = read_csv('pin/' + char_ + '.csv')
+            res = read_csv('C:/Users/watanabe Lab/PycharmProjects/point-map/pin/' + char_ + '.csv')
+            print(res)
             if res == -1:
                 flash("文字が見つからない")
             else:
-                # 调用c
-                # flash('[{char_}]正在调用串口'.format(char_=char_))
-                print("res: ", res)
-                # 此处会先关闭串口程序再次打开 是为了避免同一串口进程缺少init和屏幕清零过程导致不更新数据
-                p = get_chuankou_exe()
-                close_chuankou_exe()
-                p = get_chuankou_exe()
-                # 连续写入两次需要发送的数据 怀疑python底层有bug
-                p.stdin.write(res + '\n')
-                p.stdin.flush()
-                p.stdin.write(res + '\n')
-                p.stdin.flush()
-                sleep(2)
-                # 读出串口程序打印的数据, 一定要读取出来 可以不print
-                try:
-                    line = p.stdout.readline()
-                    print(line)
-                except UnicodeError as e:
-                    print(e)
-                    sleep(0.1)
-                    line = ""
-                # line, err = p.communicate()
-                timer = 0
-                # 999作为输出完成的标志 如果需要调整需要同步调整串口c文件
-                while '999' not in line and timer < 10:
-                    print(1)
-                    # p.stdin.write('\n')
-                    try:
-                        line = p.stdout.readline()
-                        print(line)
-                    except UnicodeError as e:
-                        print(e)
-                        timer += 1
-                        sleep(0.1)
-                        line = ""
-                    print(2)
-
-                print(line)
+                display_serial(char_)
+                # # 调用c
+                # # flash('[{char_}]正在调用串口'.format(char_=char_))
+                # print("res: ", res)
+                # # 此处会先关闭串口程序再次打开 是为了避免同一串口进程缺少init和屏幕清零过程导致不更新数据
+                # p = get_chuankou_exe()
+                # close_chuankou_exe()
+                # p = get_chuankou_exe()
+                # # 连续写入两次需要发送的数据 怀疑python底层有bug
+                # p.stdin.write(res + '\n')
+                # p.stdin.flush()
+                # p.stdin.write(res + '\n')
+                # p.stdin.flush()
+                # sleep(2)
+                # # 读出串口程序打印的数据, 一定要读取出来 可以不print
+                # try:
+                #     line = p.stdout.readline()
+                #     print(line)
+                # except UnicodeError as e:
+                #     print(e)
+                #     sleep(0.1)
+                #     line = ""
+                # # line, err = p.communicate()
+                # timer = 0
+                # # 999作为输出完成的标志 如果需要调整需要同步调整串口c文件
+                # while '999' not in line and timer < 10:
+                #     print(1)
+                #     # p.stdin.write('\n')
+                #     try:
+                #         line = p.stdout.readline()
+                #         print(line)
+                #     except UnicodeError as e:
+                #         print(e)
+                #         timer += 1
+                #         sleep(0.1)
+                #         line = ""
+                #     print(2)
+                #
+                # print(line)
                 # cmd = 'chuankou.exe {exit_flag} {res}'.format(exit_flag=1, res=res)
                 # out = os.system(cmd)
                 # try:
@@ -212,6 +252,7 @@ def serial_switch(serial_switch):
 def display_html(csv_id):
     csv_id = csv_id
     all_list = get_all_list(csv_id)
+
     return render_template('display_html.html', dataset=all_list)
 
 
@@ -229,8 +270,9 @@ def get_all_list(csv_id):
     csv_id = csv_id
     # print(csv_id)
     # 原存档csv的文件夹改名为pin, 防止编码错误
-    csv_url = os.getcwd() + '/pin/' + csv_id + '.csv'
-    print(csv_url)
+    # csv_url = os.getcwd() + 'pin/' + csv_id + '.csv'
+    csv_url = 'C:/Users/watanabe Lab/PycharmProjects/point-map'+ '/pin/' + csv_id + '.csv'
+    # print(csv_url)
 
     # dataset = tablib.Dataset()
     # with open(os.path.join(os.path.dirname(__file__),'/Users/liuzhihan/Downloads/code/データ保存ファイル/八.csv')) as f:
@@ -272,7 +314,13 @@ def display(csv_id):
     #         row_list.append(data[i][k])
     #     all_list.append(row_list)
     # # print(all_list)
-
+    #
+    res = read_csv('pin/' + csv_id + '.csv')
+    if res == -1:
+        return redirect(url_for('admin'))
+    else:
+        display_serial(csv_id)
+    #
     return render_template('display.html', dataset=all_list)
 
 
